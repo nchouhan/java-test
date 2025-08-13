@@ -1,0 +1,46 @@
+package com.example.jwtapi.controller;
+
+import com.example.jwtapi.model.User;
+import com.example.jwtapi.security.JwtUtil;
+import com.example.jwtapi.service.UserService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/auth")
+public class AuthController {
+    private final UserService userService;
+    private final JwtUtil jwtUtil;
+
+    public AuthController(UserService userService, JwtUtil jwtUtil) {
+        this.userService = userService;
+        this.jwtUtil = jwtUtil;
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody User loginRequest) {
+        Optional<User> userOpt = userService.findByUsername(loginRequest.getUsername());
+        if (userOpt.isPresent() && userOpt.get().getPassword().equals(loginRequest.getPassword())) {
+            String token = jwtUtil.generateToken(loginRequest.getUsername());
+            return ResponseEntity.ok(Map.of("token", token));
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    @GetMapping("/validate")
+    public ResponseEntity<?> validate(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        String token = authHeader.substring(7);
+        if (jwtUtil.validateToken(token)) {
+            String username = jwtUtil.getUsername(token);
+            return ResponseEntity.ok(Map.of("username", username));
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+}
