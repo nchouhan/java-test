@@ -25,8 +25,4 @@ public class UserService {
     public Optional<User> findByUsername(String username) {
         return users.stream().filter(u -> u.getUsername().equals(username)).findFirst();
     }
-
-    public List<User> getAllUsers() {
-        return users;
-    }
 }

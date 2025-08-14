@@ -6,7 +6,6 @@ This is a simple Spring Boot REST API demonstrating JWT-based authentication.
 
 - `POST /auth/login` – Authenticate with JSON body `{ "username": "alice", "password": "password1" }` and receive a JWT token.
 - `GET /auth/validate` – Send the JWT token in the `Authorization: Bearer <token>` header to validate it and receive the associated username.
-- `GET /users` – Protected endpoint that returns a list of all users. Requires a valid JWT token in the `Authorization: Bearer <token>` header.
 
 User data is stored locally in `src/main/resources/users.json`.
 
