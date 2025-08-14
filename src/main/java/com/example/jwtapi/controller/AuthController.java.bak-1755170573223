@@ -1,11 +1,8 @@
 package com.example.jwtapi.controller;
 
 import com.example.jwtapi.model.User;
-import com.example.jwtapi.model.PhoneLoginRequest;
-import com.example.jwtapi.model.OtpVerificationRequest;
 import com.example.jwtapi.security.JwtUtil;
 import com.example.jwtapi.service.UserService;
-import com.example.jwtapi.service.OtpService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +16,10 @@ import java.util.Optional;
 public class AuthController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
-    private final OtpService otpService;
 
-    public AuthController(UserService userService, JwtUtil jwtUtil, OtpService otpService) {
+    public AuthController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
         this.jwtUtil = jwtUtil;
-        this.otpService = otpService;
     }
 
     @PostMapping("/login")
@@ -59,21 +54,6 @@ public class AuthController {
         if (jwtUtil.validateToken(token)) {
             List<User> users = userService.getAllUsers();
             return ResponseEntity.ok(users);
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-
-    @PostMapping("/phone/login")
-    public ResponseEntity<?> phoneLogin(@RequestBody PhoneLoginRequest request) {
-        String otp = otpService.generateAndStoreOtp(request.getPhoneNumber());
-        return ResponseEntity.ok(Map.of("message", "OTP sent successfully"));
-    }
-
-    @PostMapping("/phone/verify")
-    public ResponseEntity<?> verifyOtp(@RequestBody OtpVerificationRequest request) {
-        if (otpService.verifyOtp(request.getPhoneNumber(), request.getOtp())) {
-            String token = jwtUtil.generateToken(request.getPhoneNumber());
-            return ResponseEntity.ok(Map.of("token", token));
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
